@@ -2,21 +2,35 @@
 #include "player.h"
 #include "raylib.h"
 
-#define SPEED 10
+#define TILESIZE 40
+
+typedef enum Direction 
+{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
+} Direction;
 
 typedef struct Player
 {
     Vector2 pos;
-    Vector2 velocity;
+    Direction dir;
+    int sprinting;
 } Player;
 
 void handleInput(Player *p);
+void move(Player *p, int numTiles);
+void interact(Player *p);
+int canWalk(double interval);
+
+double lastUpdateTime = 0.0;
 
 Player *createPlayer()
 {
     Player *p = malloc(sizeof(Player));
     p->pos = (Vector2) { 900/2, 600/2};
-    p->velocity = (Vector2) {0, 0};
+    p->dir = UP;
     return p;
 }
 
@@ -29,23 +43,79 @@ void destroyPlayer(Player *p)
 void updatePlayer(Player *p)
 {
     handleInput(p);
-
-    p->pos.x += p->velocity.x;
-    p->pos.y += p->velocity.y;
 }
 
 void drawPlayer(const Player *p)
 {
-    DrawRectangle(p->pos.x, p->pos.y, 10, 10, BLACK);
+    DrawRectangle(p->pos.x, p->pos.y, 40, 40, BLACK);
 }
 
 void handleInput(Player *p)
 {
-    int xDir = (IsKeyDown(KEY_D) ? 1 : 0) - (IsKeyDown(KEY_A) ? 1 : 0);
-    int yDir = (IsKeyDown(KEY_S) ? 1 : 0) - (IsKeyDown(KEY_W) ? 1 : 0);
+    Direction prevDir = p->dir;
 
-    if (xDir && yDir) p->velocity = (Vector2) {0, 0};
-    else if (xDir) p->velocity.x = xDir * SPEED;
-    else if (yDir) p->velocity.y = yDir * SPEED;
-    else p->velocity = (Vector2) {0, 0};
+    int numTiles = 0;
+    if (IsKeyDown(KEY_A))
+    {
+        p->dir = LEFT;
+        numTiles = 1;
+    }
+    else if (IsKeyDown(KEY_D))
+    {
+        p->dir = RIGHT;
+        numTiles = 1;
+    }
+    else if (IsKeyDown(KEY_W))
+    {
+        p->dir = UP;
+        numTiles = 1;
+    }
+    else if (IsKeyDown(KEY_S))
+    {
+        p->dir = DOWN;
+        numTiles = 1;
+    }
+
+    p->sprinting = IsKeyDown(KEY_LEFT_SHIFT);
+
+    if (prevDir != p->dir) numTiles = 0;
+
+    if (p->sprinting && numTiles) numTiles = 2;
+
+    if (canWalk(0.1)) move(p, numTiles);
+}
+
+void interact(Player *p)
+{
+
+}
+
+void move(Player *p, int numTiles)
+{
+    switch (p->dir)
+    {
+    case LEFT:
+        p->pos.x -= TILESIZE * numTiles;
+        break;
+    case RIGHT:
+        p->pos.x += TILESIZE * numTiles;
+        break;
+    case UP:
+        p->pos.y -= TILESIZE * numTiles;
+        break;
+    case DOWN:
+        p->pos.y += TILESIZE * numTiles;
+        break;
+    }
+}
+
+int canWalk(double interval)
+{
+	double currentTime = GetTime();
+	if (currentTime - lastUpdateTime >= interval)
+	{
+		lastUpdateTime = currentTime;
+		return 1;
+	}
+	return 0;
 }
