@@ -1,6 +1,7 @@
 #include "game.h"
 #include "player.h"
 #include "raylib.h"
+#include "assetManager.h"
 
 #define HEIGHT 600
 #define WIDTH 900
@@ -14,6 +15,7 @@ void initGame()
 {
     InitWindow(WIDTH, HEIGHT, "notPokemon");
     SetTargetFPS(60);
+    loadAssets();
     player = createPlayer();
 }
 
@@ -28,7 +30,7 @@ void runGame()
 
 void closeGame()
 {
-
+    unloadAssets();
 }
 
 void drawGame()
