@@ -1,7 +1,8 @@
 #include "game.h"
-#include "player.h"
 #include "raylib.h"
 #include "assetManager.h"
+#include "world.h"
+#include "player.h"
 
 #define HEIGHT 600
 #define WIDTH 900
@@ -16,7 +17,9 @@ void initGame()
     InitWindow(WIDTH, HEIGHT, "notPokemon");
     SetTargetFPS(60);
     loadAssets();
-    player = createPlayer();
+    Map *m = createMap(WIDTH / 32, HEIGHT / 32);
+    setCurrentMap(m);
+    player = createPlayer((Vector2) { 900/2, 600/2});
 }
 
 void runGame()
@@ -41,6 +44,7 @@ void drawGame()
 
     DrawFPS(10, 10);
 
+    drawMap();
     drawPlayer(player);
 
     EndDrawing();
